@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const config = require('../../settings.js');
 const isChannelLocked = config.CommandChannelLocked;
 const allowedChannelId = config.CommandChannelId;
 // 90 SFW Truths
