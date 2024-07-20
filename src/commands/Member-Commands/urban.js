@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const axios = require('axios');
+const config = require('../../settings.js');
 const isChannelLocked = config.CommandChannelLocked;
 const allowedChannelId = config.CommandChannelId;
 // Default color if config.embedColor is not available or invalid
