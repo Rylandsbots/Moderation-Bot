@@ -1,0 +1,1 @@
+module.exports = { clientid: '', token: '', guildid: '', botstartmessage: '', modpermissions: '', ownerpermissions: '', botlogs: '', welcomechannel: '', leavechannel: '', newmemberrole: '', welcomemsg: '', leavemsg: '', CommandChannelLocked:'', CommandChannelId:'', }
