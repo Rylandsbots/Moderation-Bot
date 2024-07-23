@@ -3,10 +3,12 @@ const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const config = require('../../settings.js');
+
 const rolePermissions = {
   moderators: true,
   founders: false
 };
+
 const dbTicketPanels = path.join(__dirname, '..', '..', 'databases', 'ticketpanels.json');
 
 module.exports = {
@@ -21,6 +23,11 @@ module.exports = {
       option.setName('ticket_category')
         .setDescription('The category where tickets should be opened')
         .addChannelTypes(ChannelType.GuildCategory)
+        .setRequired(true))
+    .addChannelOption(option =>
+      option.setName('transcript_channel')
+        .setDescription('The channel where ticket transcripts will be sent')
+        .addChannelTypes(ChannelType.GuildText)
         .setRequired(true)),
 
   async execute(interaction) {
@@ -30,6 +37,7 @@ module.exports = {
     );
     const managerRole = interaction.options.getRole('manager_role');
     const ticketCategory = interaction.options.getChannel('ticket_category');
+    const transcriptChannel = interaction.options.getChannel('transcript_channel');
 
     // Generate random custom IDs
     const modalCustomId = `ticketPanelModal_${uuidv4()}`;
@@ -112,6 +120,7 @@ module.exports = {
         guildId: interaction.guild.id,
         managerRoleId: managerRole.id,
         ticketCategoryId: ticketCategory.id,
+        transcriptChannelId: transcriptChannel.id,
         embedTitle: embedTitle,
         embedDescription: embedDescription,
         buttonCustomId: buttonCustomId,
