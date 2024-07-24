@@ -1,4 +1,4 @@
-const { EmbedBuilder, AuditLogEvent, ChannelType, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { EmbedBuilder, AuditLogEvent, ChannelType, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder } = require('discord.js');
 const config = require('../settings.js');
 const fs = require('fs');
 const path = require('path');
@@ -9,8 +9,6 @@ module.exports = {
   name: 'ready',
   once: true,
   execute: async function(client) {
-
-
     client.on('interactionCreate', async interaction => {
       if (!interaction.isButton()) return;
 
@@ -20,10 +18,7 @@ module.exports = {
         ticketPanels = JSON.parse(data);
       }
 
- 
-
       const ticketPanel = ticketPanels.find(panel => panel.buttonCustomId === interaction.customId);
-
       if (ticketPanel) {
         const channelName = `${interaction.user.username}-ticket`;
         const ticketChannel = await interaction.guild.channels.create({
@@ -52,12 +47,14 @@ module.exports = {
           .setStyle(ButtonStyle.Danger);
 
         const row = new ActionRowBuilder().addComponents(closeButton);
-
+  const botAvatarURL = client.user.displayAvatarURL({ dynamic: true });
         const ticketEmbed = new EmbedBuilder()
           .setTitle(ticketPanel.embedTitle)
           .setDescription(ticketPanel.ticketOpenMessage.replace('{user}', interaction.user.toString()))
           .setColor('#00ff00')
-          .setTimestamp();
+            .setThumbnail(botAvatarURL)
+     		.setFooter({ text: client.user.username, iconURL: botAvatarURL })
+        	.setTimestamp();
 
         await ticketChannel.send({ embeds: [ticketEmbed], components: [row] });
         await interaction.reply({ content: `Ticket created! Please check ${ticketChannel.toString()}`, ephemeral: true });
@@ -66,49 +63,116 @@ module.exports = {
         const channel = interaction.channel;
         const ticketOpenerId = interaction.customId.split('_')[1];
         const ticketOpener = await client.users.fetch(ticketOpenerId);
-        const transcript = await discordTranscripts.createTranscript(channel);
 
-        // Read the ticketPanels data again here
-        let ticketPanels = [];
-        if (fs.existsSync(dbTicketPanels)) {
-          const data = fs.readFileSync(dbTicketPanels, 'utf8');
-          ticketPanels = JSON.parse(data);
-        }
+        const reopenButton = new ButtonBuilder()
+          .setCustomId(`reopenTicket_${ticketOpenerId}`)
+          .setLabel('Reopen Ticket')
+          .setStyle(ButtonStyle.Primary);
 
-      
+        const row = new ActionRowBuilder().addComponents(reopenButton);
+  const botAvatarURL = client.user.displayAvatarURL({ dynamic: true });
+        const warningEmbed = new EmbedBuilder()
+          .setTitle('Ticket Closing')
+          .setDescription('This ticket will close in 30 seconds. To prevent closing, click the reopen button.')
+          .setColor('#FFA500')
+            .setThumbnail(botAvatarURL)
+     		.setFooter({ text: client.user.username, iconURL: botAvatarURL })
+        	.setTimestamp();
 
-        const ticketPanel = ticketPanels.find(panel => panel.ticketCategoryId === channel.parentId);
+        const warningMessage = await channel.send({ embeds: [warningEmbed], components: [row] });
 
+        const filter = i => i.customId === `reopenTicket_${ticketOpenerId}` && i.user.id === ticketOpenerId;
+        const collector = channel.createMessageComponentCollector({ filter, time: 30000 });
 
+        collector.on('collect', async i => {
+          await i.update({ content: 'Ticket reopened!', embeds: [], components: [] });
+          collector.stop('reopened');
+        });
 
-        if (ticketPanel && ticketPanel.transcriptChannelId) {
-  
-
-          try {
-            const transcriptChannel = await client.channels.fetch(ticketPanel.transcriptChannelId);
-            await transcriptChannel.send({
-              content: `Transcript for ticket ${channel.name}:`,
-              files: [transcript],
-            });
-          } catch (error) {
-            console.error(`Error sending transcript to channel ID ${ticketPanel.transcriptChannelId}: ${error}`);
+        collector.on('end', async (collected, reason) => {
+          if (reason === 'reopened') {
+            return;
           }
-        } else {
-          console.log('No valid transcriptChannelId found');
-        }
 
-        try {
-          await ticketOpener.send({
-            content: 'Here is a transcript of your closed ticket:',
-            files: [transcript],
-          });
-        } catch (error) {
-          console.error(`Failed to send transcript to user: ${error}`);
-          await interaction.reply({ content: 'Failed to send transcript to the user. The ticket will still be closed.', ephemeral: true });
-        }
+          // Generate the transcript
+          const transcript = await discordTranscripts.createTranscript(channel);
 
-        await channel.delete();
-        await interaction.reply({ content: 'Ticket closed and transcript sent to the transcript channel.', ephemeral: true });
+          // Create an attachment from the transcript
+          const attachment = new AttachmentBuilder(transcript.attachment, { name: 'transcript.html' });
+
+          // Read the ticketPanels data again here
+          let ticketPanels = [];
+          if (fs.existsSync(dbTicketPanels)) {
+            const data = fs.readFileSync(dbTicketPanels, 'utf8');
+            ticketPanels = JSON.parse(data);
+          }
+        
+          const ticketPanel = ticketPanels.find(panel => panel.ticketCategoryId === channel.parentId);
+          if (ticketPanel && ticketPanel.transcriptChannelId) {
+            try {
+              const transcriptChannel = await client.channels.fetch(ticketPanel.transcriptChannelId);
+              
+              // Send the attachment to the transcript channel
+              const transcriptMessage = await transcriptChannel.send({ files: [attachment] });
+              const transcriptUrl = transcriptMessage.attachments.first().url;
+  	
+              // Create the embed for the transcript channel
+              const transcriptChannelEmbed = new EmbedBuilder()
+                .setTitle(`Transcript for ticket ${channel.name}`)
+                .setDescription(`Ticket closed by ${interaction.user.tag}`)
+                .setColor('#00ff00')
+               .setThumbnail(botAvatarURL)
+     		.setFooter({ text: client.user.username, iconURL: botAvatarURL })
+        	.setTimestamp()
+                .addFields(
+                  { name: 'Ticket Opener', value: ticketOpener.tag, inline: true },
+                  { name: 'Closed At', value: new Date().toUTCString(), inline: true },
+                  { name: 'Server', value: interaction.guild.name, inline: true }
+                );
+
+              // Send the embed to the transcript channel
+              await transcriptChannel.send({ embeds: [transcriptChannelEmbed] });
+
+              // Create the embed for the user with the transcript link
+              const userEmbed = new EmbedBuilder()
+                .setTitle(`Ticket Transcript - ${channel.name}`)
+                .setDescription("This is your transcript log from your ticket")
+                .setColor('#00ff00')
+           .setThumbnail(botAvatarURL)
+     		.setFooter({ text: client.user.username, iconURL: botAvatarURL })
+        	.setTimestamp()
+                .addFields(
+                  {
+                    name: "Transcript Link:",
+                    value: transcriptUrl,
+                    inline: false
+                  },
+                  {
+                    name: "How To View Your Transcript.",
+                    value: "This is your transcript log from your ticket. To view your ticket information, click the link above, go to your downloads, and open the file.",
+                    inline: false
+                  },
+                  {
+                    name: "Ticket Details",
+                    value: `Ticket Name: ${channel.name}\nClosed At: ${new Date().toUTCString()}\nCategory: ${channel.parent ? channel.parent.name : 'N/A'}`,
+                    inline: false
+                  },
+                );
+
+              // Send the embed with the link to the user
+              await ticketOpener.send({ embeds: [userEmbed] });
+
+              await channel.delete();
+              await interaction.followUp({ content: 'Ticket closed and transcript sent.', ephemeral: true });
+
+            } catch (error) {
+              console.error(`Error sending transcript: ${error}`);
+              await interaction.followUp({ content: 'Failed to send transcript. The ticket will still be closed.', ephemeral: true });
+            }
+          } else {
+            console.log('No valid transcriptChannelId found');
+          }
+        });
       }
     });
   },
