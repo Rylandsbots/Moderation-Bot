@@ -5,23 +5,22 @@ module.exports = {
   name: 'ready',
   once: true,
   execute: async function(client) {
-
-
     const logChannel = client.channels.cache.get(config.botlogs);
 
     function createLogEmbed(title, description, fields) {
-  const botAvatarURL = client.user.displayAvatarURL({ dynamic: true });
+      const botAvatarURL = client.user.displayAvatarURL({ dynamic: true });
       return new EmbedBuilder()
         .setColor('#00ff00')
         .setTitle(title)
         .setDescription(description)
         .addFields(fields)
         .setThumbnail(botAvatarURL)
-     .setFooter({ text: client.user.username, iconURL: botAvatarURL })
+        .setFooter({ text: client.user.username, iconURL: botAvatarURL })
         .setTimestamp();
     }
 
     client.on('messageCreate', message => {
+      if (!message.author) return;
       if (message.author.bot) return;
 
       const embed = createLogEmbed(
@@ -42,6 +41,7 @@ module.exports = {
     });
 
     client.on('messageUpdate', (oldMessage, newMessage) => {
+      if (!oldMessage.author) return;
       if (oldMessage.author.bot) return;
 
       const embed = createLogEmbed(
@@ -63,6 +63,7 @@ module.exports = {
     });
 
     client.on('messageDelete', message => {
+      if (!message.author) return;
       if (message.author.bot) return;
 
       const embed = createLogEmbed(
@@ -82,4 +83,4 @@ module.exports = {
       logChannel.send({ embeds: [embed] });
     });
   }
-}
+};
