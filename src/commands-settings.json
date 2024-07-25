@@ -1,0 +1,166 @@
+{
+    "commandmanagement": {
+        "changechannelname": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "channelinfo": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "slowmode": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "clear": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "deletechannel": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "dm": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "nsfw": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "say": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "userinfo": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        }
+    },
+    "embedsmanagement": {
+        "createembed": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "editembed": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "listembeds": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "loadembed": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        }
+    },
+    "pollmanagement": {
+        "deletepoll": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "editpoll": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "listpolls": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "loadpoll": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "poll": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "pollresults": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        }
+    },
+    "punishmentmanagement": {
+        "ban": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "deafen": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "deleteaction": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "disconnect": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "editaction": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "kick": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "movevc": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "timeout": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "unban": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "viewpunishments": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "voicemute": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "warn": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        }
+    },
+    "rolemanagement": {
+        "clonerole": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "createrole": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "listroles": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "rolemembers": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "managerole": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "renamerole": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "bulkrole": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "deleterole": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "roleinfo": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        }
+    },
+    "rolemenumanagement": {
+        "createrolemenu": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "deleterolemenu": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "editrolemenu": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "listrolemenus": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "loadrolemenu": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        }
+    },
+    "ticketmenumanagement": {
+        "createticketpanel": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "editticketpanel": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "loadticketpanel": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "deleteticketpanel": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        },
+        "ticketuser": {
+            "roleids": ["role_id_placeholder1", "role_id_placeholder2"]
+        }
+    }
+}

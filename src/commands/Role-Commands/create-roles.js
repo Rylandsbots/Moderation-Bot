@@ -1,10 +1,7 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 const config = require('../../settings.js');
 
-const rolePermissions = {
-  moderators: false,
-  founders: true
-};
+
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -32,15 +29,17 @@ module.exports = {
     ),
 
   async execute(interaction) {
-  const botAvatarURL = interaction.client.user.displayAvatarURL();
-    // Check if the user has the required role
-    const hasPermission = interaction.member.roles.cache.some(role => 
-      (role.id === config.modpermissions && rolePermissions.moderators) ||
-      (role.id === config.ownerpermissions && rolePermissions.founders)
-    );
-
+    const botAvatarURL = interaction.client.user.displayAvatarURL();
+    const commandmanagement = require('../../commands-settings.json');
+    const ALLOWED_ROLE_IDS = commandmanagement.rolemanagement.createrole.roleids;
+    const hasPermission = interaction.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id));
+  
     if (!hasPermission) {
-      return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
+      const embed = new EmbedBuilder()
+        .setColor('#FF0000')
+        .setDescription(`🛑 You do not have permission to use this command. ${interaction.commandName}`);
+  
+      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
     // Check if the bot has permission to manage roles

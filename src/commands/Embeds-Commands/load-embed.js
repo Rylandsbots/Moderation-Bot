@@ -17,10 +17,7 @@ function readDatabase() {
   }
 }
 
-const rolePermissions = {
-  moderators: true,
-  founders: true
-};
+
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -35,13 +32,16 @@ module.exports = {
   async execute(interaction) {
   const botAvatarURL = interaction.client.user.displayAvatarURL();
     // Check if the user has the required role
-    const hasPermission = interaction.member.roles.cache.some(role => 
-      (role.id === config.modpermissions && rolePermissions.moderators) ||
-      (role.id === config.ownerpermissions && rolePermissions.founders)
-    );
+    const commandmanagement = require('../../commands-settings.json');
+    const ALLOWED_ROLE_IDS = commandmanagement.embedsmanagement.loadembed.roleids;
+    const hasPermission = interaction.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id));
 
     if (!hasPermission) {
-      return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
+      const embed = new EmbedBuilder()
+        .setColor('#FF0000')
+        .setDescription(`🛑 You do not have permission to use this command. ${interaction.commandName}`);
+
+      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
     const embedId = interaction.options.getString('embedid');

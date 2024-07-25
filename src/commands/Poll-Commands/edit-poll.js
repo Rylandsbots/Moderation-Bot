@@ -17,10 +17,7 @@ const TIMER_OPTIONS = {
     '24 Hours': 24 * 60 * 60 * 1000,
 };
 
-const rolePermissions = {
-    moderators: true,
-    founders: true
-};
+
 
 // Path to the JSON file
 const pollsDbPath = path.join(__dirname, '..', '..', 'databases', 'polls.json');
@@ -102,15 +99,17 @@ module.exports = {
                 .setDescription('New Option 10')),
 
     async execute(interaction) {
-        const hasPermission = interaction.member.roles.cache.some(role => 
-            (role.id === config.modpermissions && rolePermissions.moderators) ||
-            (role.id === config.ownerpermissions && rolePermissions.founders)
-        );
-      
+        const commandmanagement = require('../../commands-settings.json');
+        const ALLOWED_ROLE_IDS = commandmanagement.pollmanagement.editpoll.roleids;
+        const hasPermission = interaction.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id));
+    
         if (!hasPermission) {
-            return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
+          const embed = new EmbedBuilder()
+            .setColor('#FF0000')
+            .setDescription(`🛑 You do not have permission to use this command. ${interaction.commandName}`);
+    
+          return interaction.reply({ embeds: [embed], ephemeral: true });
         }
-
         const pollUuid = interaction.options.getString('uuid');
         const newQuestion = interaction.options.getString('question');
         const newTimer = interaction.options.getString('timer');

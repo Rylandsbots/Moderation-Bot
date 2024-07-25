@@ -3,10 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const config = require('../../settings.js');
 const dbTicketPanels = path.join(__dirname, '..', '..', 'databases', 'ticketpanels.json');
-const rolePermissions = {
-  moderators: true,
-  founders: false
-};
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('deleteticketpanel')
@@ -14,14 +11,20 @@ module.exports = {
     .addStringOption(option =>
       option.setName('uuid')
         .setDescription('The UUID of the ticket panel to delete')
-        .setRequired(true))
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
+        .setRequired(true)),
 
   async execute(interaction) {
-    const hasPermission = interaction.member.roles.cache.some(role => 
-      (role.id === config.modpermissions && rolePermissions.moderators) ||
-      (role.id === config.ownerpermissions && rolePermissions.founders)
-    );
+    const commandmanagement = require('../../commands-settings.json');
+    const ALLOWED_ROLE_IDS = commandmanagement.ticketmenumanagement.deleteticketpanel.roleids;
+    const hasPermission = interaction.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id));
+  
+    if (!hasPermission) {
+      const embed = new EmbedBuilder()
+        .setColor('#FF0000')
+        .setDescription(`🛑 You do not have permission to use this command. ${interaction.commandName}`);
+  
+      return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
     const uuid = interaction.options.getString('uuid');
 
     // Read the ticket panels from the database

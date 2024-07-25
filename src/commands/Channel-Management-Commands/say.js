@@ -1,11 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 const config = require('../../settings.js');
 
-const rolePermissions = {
-  moderators: true,
-  founders: false
-};
-
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('say')
@@ -22,26 +17,27 @@ module.exports = {
     ),
 
   async execute(interaction) {
-  const botAvatarURL = interaction.client.user.displayAvatarURL();
-    // Check if the user has the required role
-    const hasPermission = interaction.member.roles.cache.some(role => 
-      (role.id === config.modpermissions && rolePermissions.moderators) ||
-      (role.id === config.ownerpermissions && rolePermissions.founders)
-    );
+    const botAvatarURL = interaction.client.user.displayAvatarURL();
+    
+    const commandmanagement = require('../../commands-settings.json');
+    const ALLOWED_ROLE_IDS = commandmanagement.commandmanagement.say.roleids;
+    const hasPermission = interaction.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id));
 
     if (!hasPermission) {
-      return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
+      const embed = new EmbedBuilder()
+        .setColor('#FF0000')
+        .setDescription(`🛑 You do not have permission to use this command. ${interaction.commandName}`);
+
+      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
     const channel = interaction.options.getChannel('channel');
     const message = interaction.options.getString('message');
 
-    // Check if the channel is a text channel
     if (!channel.isTextBased()) {
       return interaction.reply({ content: 'The specified channel must be a text channel.', ephemeral: true });
     }
 
-    // Check if the bot has permission to send messages in the channel
     if (!channel.permissionsFor(interaction.client.user).has(PermissionFlagsBits.SendMessages)) {
       return interaction.reply({ content: 'I do not have permission to send messages in that channel.', ephemeral: true });
     }
@@ -50,7 +46,6 @@ module.exports = {
       await channel.send(message);
       await interaction.reply({ content: `Message sent successfully in ${channel}.`, ephemeral: true });
 
-      // Create and send the embed to a specific channel
       const logChannel = interaction.guild.channels.cache.get(config.botlogs);
       if (logChannel) {
         const embed = new EmbedBuilder()

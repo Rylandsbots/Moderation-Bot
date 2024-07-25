@@ -4,10 +4,6 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const config = require('../../settings.js');
 
-const rolePermissions = {
-  moderators: true,
-  founders: false
-};
 
 const dbTicketPanels = path.join(__dirname, '..', '..', 'databases', 'ticketpanels.json');
 
@@ -31,10 +27,19 @@ module.exports = {
         .setRequired(true)),
 
   async execute(interaction) {
-    const hasPermission = interaction.member.roles.cache.some(role => 
-      (role.id === config.modpermissions && rolePermissions.moderators) ||
-      (role.id === config.ownerpermissions && rolePermissions.founders)
-    );
+    const commandmanagement = require('../../commands-settings.json');
+    const ALLOWED_ROLE_IDS = commandmanagement.ticketmenumanagement.createticketpanel.roleids;
+    const hasPermission = interaction.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id));
+  
+    if (!hasPermission) {
+      const embed = new EmbedBuilder()
+        .setColor('#FF0000')
+        .setDescription(`🛑 You do not have permission to use this command. ${interaction.commandName}`);
+  
+      return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
+
+
     const managerRole = interaction.options.getRole('manager_role');
     const ticketCategory = interaction.options.getChannel('ticket_category');
     const transcriptChannel = interaction.options.getChannel('transcript_channel');

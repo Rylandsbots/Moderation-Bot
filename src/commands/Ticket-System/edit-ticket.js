@@ -2,10 +2,7 @@ const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Butt
 const fs = require('fs');
 const path = require('path');
 const config = require('../../settings.js');
-const rolePermissions = {
-  moderators: true,
-  founders: false
-};
+
 const dbTicketPanels = path.join(__dirname, '..', '..', 'databases', 'ticketpanels.json');
 
 module.exports = {
@@ -18,10 +15,17 @@ module.exports = {
         .setRequired(true)),
 
   async execute(interaction) {
-    const hasPermission = interaction.member.roles.cache.some(role => 
-      (role.id === config.modpermissions && rolePermissions.moderators) ||
-      (role.id === config.ownerpermissions && rolePermissions.founders)
-    );
+    const commandmanagement = require('../../commands-settings.json');
+    const ALLOWED_ROLE_IDS = commandmanagement.ticketmenumanagement.editticketpanel.roleids;
+    const hasPermission = interaction.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id));
+  
+    if (!hasPermission) {
+      const embed = new EmbedBuilder()
+        .setColor('#FF0000')
+        .setDescription(`🛑 You do not have permission to use this command. ${interaction.commandName}`);
+  
+      return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
     const panelId = interaction.options.getString('panel_id');
 
     // Read ticket panels from the database

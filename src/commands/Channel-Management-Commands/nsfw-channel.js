@@ -1,11 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 const config = require('../../settings.js');
 
-const rolePermissions = {
-  moderators: true,
-  founders: false
-};
-
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('nsfw')
@@ -17,37 +12,37 @@ module.exports = {
     ),
 
   async execute(interaction) {
-  const botAvatarURL = interaction.client.user.displayAvatarURL();
-    // Check if the user has the required role
-    const hasPermission = interaction.member.roles.cache.some(role => 
-      (role.id === config.modpermissions && rolePermissions.moderators) ||
-      (role.id === config.ownerpermissions && rolePermissions.founders)
-    );
+    const botAvatarURL = interaction.client.user.displayAvatarURL();
+    
+    const commandmanagement = require('../../commands-settings.json');
+    const ALLOWED_ROLE_IDS = commandmanagement.commandmanagement.nsfw.roleids;
+    const hasPermission = interaction.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id));
 
     if (!hasPermission) {
-      return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
+      const embed = new EmbedBuilder()
+        .setColor('#FF0000')
+        .setDescription(`🛑 You do not have permission to use this command. ${interaction.commandName}`);
+
+      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
     const channel = interaction.options.getChannel('channel') || interaction.channel;
 
-    // Check if the channel is a valid guild text channel
     if (!channel.isTextBased() || channel.isDMBased()) {
       return interaction.reply({ content: 'NSFW status can only be set for server text channels.', ephemeral: true });
     }
 
     try {
-      // Toggle the NSFW status
       const newNsfwStatus = !channel.nsfw;
       await channel.setNSFW(newNsfwStatus);
 
       const statusMessage = newNsfwStatus ? 'enabled' : 'disabled';
       await interaction.reply(`NSFW status has been ${statusMessage} for ${channel}.`);
 
-      // Create and send the embed to a specific channel
       const logChannel = interaction.guild.channels.cache.get(config.botlogs);
       if (logChannel) {
         const embed = new EmbedBuilder()
-          .setColor(newNsfwStatus ? '#FF0000' : '#00FF00')  // Red for enabled, Green for disabled
+          .setColor(newNsfwStatus ? '#FF0000' : '#00FF00')
           .setTitle("NSFW Status Change Logs")
           .setDescription(`${interaction.user} changed NSFW status:`)
           .addFields(

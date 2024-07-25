@@ -3,10 +3,7 @@ const path = require('path');
 const { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const config = require('../../settings.js');
 
-const rolePermissions = {
-    moderators: true,
-    founders: true
-};
+
 
 // Path to the JSON file
 const pollsDbPath = path.join(__dirname, '..', '..', 'databases', 'polls.json');
@@ -28,15 +25,17 @@ module.exports = {
         .setDescription('List all active polls'),
 
     async execute(interaction) {
-        const hasPermission = interaction.member.roles.cache.some(role => 
-            (role.id === config.modpermissions && rolePermissions.moderators) ||
-            (role.id === config.ownerpermissions && rolePermissions.founders)
-        );
-      
+        const commandmanagement = require('../../commands-settings.json');
+        const ALLOWED_ROLE_IDS = commandmanagement.pollmanagement.listpolls.roleids;
+        const hasPermission = interaction.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id));
+    
         if (!hasPermission) {
-            return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
+          const embed = new EmbedBuilder()
+            .setColor('#FF0000')
+            .setDescription(`🛑 You do not have permission to use this command. ${interaction.commandName}`);
+    
+          return interaction.reply({ embeds: [embed], ephemeral: true });
         }
-
         const polls = readPollsDatabase();
 
         if (polls.length === 0) {

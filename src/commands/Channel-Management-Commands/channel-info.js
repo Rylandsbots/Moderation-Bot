@@ -17,15 +17,18 @@ module.exports = {
     ),
 
   async execute(interaction) {
-  const botAvatarURL = interaction.client.user.displayAvatarURL();
-    // Check if the user has the required role
-    const hasPermission = interaction.member.roles.cache.some(role => 
-      (role.id === config.modpermissions && rolePermissions.moderators) ||
-      (role.id === config.ownerpermissions && rolePermissions.founders)
-    );
+    const botAvatarURL = interaction.client.user.displayAvatarURL();
+    
+    const commandmanagement = require('../../commands-settings.json');
+    const ALLOWED_ROLE_IDS = commandmanagement.commandmanagement.channelinfo.roleids;
+    const hasPermission = interaction.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id));
 
     if (!hasPermission) {
-      return interaction.reply({ content: 'You do not have permission to use this command.', ephemeral: true });
+      const embed = new EmbedBuilder()
+        .setColor('#FF0000')
+        .setDescription(`🛑 You do not have permission to use this command. ${interaction.commandName}`);
+
+      return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
     const channel = interaction.options.getChannel('channel') || interaction.channel;
@@ -35,7 +38,6 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setColor('#0099ff')
       .setTitle(`Channel Information: #${channel.name}`)
-      
       .addFields(
         { name: 'Channel ID', value: channel.id, inline: true },
         { name: 'Type', value: channel.type.toString(), inline: true },

@@ -3,20 +3,23 @@ const fs = require('fs');
 const path = require('path');
 const config = require('../../settings.js');
 const dbRoleMenu = path.join(__dirname, '..', '..', 'databases', 'rolemenus.json');
-const rolePermissions = {
-  moderators: true,
-  founders: false
-};
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('listrolemenus')
     .setDescription('List all role menus and their data'),
 
   async execute(interaction) {
-    const hasPermission = interaction.member.roles.cache.some(role => 
-      (role.id === config.modpermissions && rolePermissions.moderators) ||
-      (role.id === config.ownerpermissions && rolePermissions.founders)
-    );
+    const commandmanagement = require('../../commands-settings.json');
+    const ALLOWED_ROLE_IDS = commandmanagement.rolemenumanagement.listrolemenus.roleids;
+    const hasPermission = interaction.member.roles.cache.some(role => ALLOWED_ROLE_IDS.includes(role.id));
+  
+    if (!hasPermission) {
+      const embed = new EmbedBuilder()
+        .setColor('#FF0000')
+        .setDescription(`🛑 You do not have permission to use this command. ${interaction.commandName}`);
+  
+      return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
     await interaction.deferReply({ ephemeral: true });
 
     // Read role menus from database
